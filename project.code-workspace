@@ -2,14 +2,10 @@
     "folders": [
         {
             "path": "Device"
-        },
-        {
-            "path": "StreamAnalytics"
         }
     ],
     "settings": {
         "IoTWorkbench.BoardId": "esp32",
-        "IoTWorkbench.DevicePath": "Device",
-        "IoTWorkbench.StreamAnalyticsPath": "StreamAnalytics"
+        "IoTWorkbench.DevicePath": "Device"
     }
 }
