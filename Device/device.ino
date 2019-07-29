@@ -4,17 +4,19 @@
 
 #include <WiFi.h>
 #include "Esp32MQTTClient.h"
+#include <DNSServer.h>
+#include <WebServer.h>
+#include <WiFiManager.h>
+#include <Preferences.h>
 
 #define INTERVAL 10000
 #define MESSAGE_MAX_LEN 256
-// Please input the SSID and password of WiFi
-const char* ssid     = "";
-const char* password = "";
 
-/*String containing Hostname, Device Id & Device Key in the format:                         */
-/*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-/*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-static const char* connectionString = "";
+WiFiManager wifiManager;
+char* connectionString;
+Preferences preferences;
+WiFiManagerParameter conStr("ConnectionString","ConnectionString",connectionString,40);
+
 const char *messageData = "{\"messageId\":%d, \"Temperature\":%f, \"Humidity\":%f}";
 static bool hasIoTHub = false;
 static bool hasWifi = false;
@@ -79,23 +81,31 @@ static int  DeviceMethodCallback(const char *methodName, const unsigned char *pa
   return result;
 }
 
-
+void saveConfigCallback()
+{
+  // Serial.println(wifiManager.getSSID());
+  // Serial.println(wifiManager.getPassword());
+  // Serial.println(conStr.getValue());
+  preferences.putString("WiFi_SSID",wifiManager.getSSID());
+  preferences.putString("WiFi_Password",wifiManager.getPassword());
+  preferences.putString("ConStr",String(conStr.getValue()));
+}
 
 void setup() {
   Serial.begin(115200);
   Serial.println("ESP32 Device");
   Serial.println("Initializing...");
+
   Serial.println(" > WiFi");
   Serial.println("Starting connecting WiFi.");
-
-  delay(10);
-  WiFi.mode(WIFI_AP);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    hasWifi = false;
-  }
+  
+  preferences.begin("Connections");
+  // wifiManager.resetSettings();
+  wifiManager.setDebugOutput(false);
+  wifiManager.addParameter(&conStr);
+  wifiManager.setSaveParamsCallback(saveConfigCallback);
+  wifiManager.autoConnect("ESP32-WiFiConfig", "AzureSet");
+  preferences.end();
   hasWifi = true;
   
   Serial.println("WiFi connected");
