@@ -13,9 +13,9 @@
 #define MESSAGE_MAX_LEN 256
 
 WiFiManager wifiManager;
-char* connectionString;
+char* connectionStr;
 Preferences preferences;
-WiFiManagerParameter conStr("ConnectionString","ConnectionString",connectionString,40);
+WiFiManagerParameter conStr("ConnectionString","ConnectionString",connectionStr,40);
 
 const char *messageData = "{\"messageId\":%d, \"Temperature\":%f, \"Humidity\":%f}";
 static bool hasIoTHub = false;
@@ -83,9 +83,6 @@ static int  DeviceMethodCallback(const char *methodName, const unsigned char *pa
 
 void saveConfigCallback()
 {
-  // Serial.println(wifiManager.getSSID());
-  // Serial.println(wifiManager.getPassword());
-  // Serial.println(conStr.getValue());
   preferences.putString("WiFi_SSID",wifiManager.getSSID());
   preferences.putString("WiFi_Password",wifiManager.getPassword());
   preferences.putString("ConStr",String(conStr.getValue()));
@@ -112,6 +109,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println(" > IoT Hub");
+  const char* connectionString = conStr.getValue();
   if (!Esp32MQTTClient_Init((const uint8_t*)connectionString, true))
   {
     hasIoTHub = false;
